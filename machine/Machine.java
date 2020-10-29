@@ -360,8 +360,8 @@ public final class Machine {
     private static NetworkLink networkLink = null;
     private static AutoGrader autoGrader = null;
 
-    //private static String autoGraderClassName = "nachos.ag.AutoGrader";
-	private static String autoGraderClassName = "nachos.ag.ThreadGrader1";
+    private static String autoGraderClassName = "nachos.ag.AutoGrader";
+	//private static String autoGraderClassName = "nachos.ag.ThreadGrader1";
 
     /**
      * Return the name of the shell program that a user-programming kernel

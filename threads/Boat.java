@@ -22,6 +22,9 @@ public class Boat
 
 //  	System.out.println("\n ***Testing Boats with 3 children, 3 adults***");
 //  	begin(3, 3, b);
+
+		// This is the test, using our own BoatGrader, we do not submit the BoatGrader.
+/*
         for(int na = 0; na < 8; na++) {
             for(int nc = 2; nc < 8; nc++) {
                 System.out.println("\n ***Testing Boats with " + nc + " children, " + na + " adult(s)***");
@@ -31,7 +34,7 @@ public class Boat
                 begin(na, nc, b);
                 b.AssertFinished();
             }
-        }
+        }*/
     }
 
     public static void begin( int adults, int children, BoatGrader b )
