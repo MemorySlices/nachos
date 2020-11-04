@@ -56,6 +56,7 @@ public class Communicator {
         use_word = false;
         wait_listen = false;
         speaker.wake();
+        lock.release();
         Machine.interrupt().restore(intStatus);
         return word;
     }

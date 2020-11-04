@@ -77,6 +77,7 @@ public class Condition2 {
             else
                 break;
         }
+        value = 0;
         Machine.interrupt().restore(intStatus);
     }
 
