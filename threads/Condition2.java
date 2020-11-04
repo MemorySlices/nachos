@@ -41,6 +41,7 @@ public class Condition2 {
 
         conditionLock.release();
         boolean intStatus = Machine.interrupt().disable();
+        value = value + 1;
         waitQueue.waitForAccess(KThread.currentThread());
         KThread.sleep();
         Machine.interrupt().restore(intStatus);
@@ -56,6 +57,7 @@ public class Condition2 {
         boolean intStatus = Machine.interrupt().disable();
         KThread thread = waitQueue.nextThread();
         if (thread != null) {
+            value = value - 1;
             thread.ready();
         }
         Machine.interrupt().restore(intStatus);
@@ -143,5 +145,6 @@ public class Condition2 {
          }
      }
     private Lock conditionLock;
+    public int value = 0;
     private ThreadQueue waitQueue = null;
 }

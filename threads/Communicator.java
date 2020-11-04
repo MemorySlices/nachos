@@ -31,11 +31,10 @@ public class Communicator {
     public void speak(int word) {
         boolean intStatus = Machine.interrupt().disable();
         lock.acquire();
-        while(flag){
+        while(use_word || (listener.value==0 && !wait_listen))
             speaker.sleep();
-        }
+        use_word = true;
         this.word = word;
-        flag = true;
         listener.wake();
         lock.release();
         Machine.interrupt().restore(intStatus);
@@ -50,13 +49,13 @@ public class Communicator {
     public int listen() {
         boolean intStatus = Machine.interrupt().disable();
         lock.acquire();
-        while(!flag){
-            listener.sleep();
-        }
-        int word = this.word;
-        flag = false;
+        wait_listen = true;
         speaker.wake();
-        lock.release();
+        listener.sleep();
+        int word = this.word;
+        use_word = false;
+        wait_listen = false;
+        speaker.wake();
         Machine.interrupt().restore(intStatus);
         return word;
     }
@@ -119,7 +118,8 @@ public class Communicator {
         }
     }
     private int word;
-    private boolean flag = false;
+    private boolean use_word = false;
+    private boolean wait_listen = false;
     private Lock lock = new Lock();
     private Condition2 listener = new Condition2(lock);
     private Condition2 speaker = new Condition2(lock);
