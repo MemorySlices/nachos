@@ -36,7 +36,7 @@ public class Communicator {
         }
         this.word = word;
         flag = true;
-        listener.wakeAll();
+        listener.wake();
         lock.release();
         Machine.interrupt().restore(intStatus);
     }
@@ -55,7 +55,7 @@ public class Communicator {
         }
         int word = this.word;
         flag = false;
-        speaker.wakeAll();
+        speaker.wake();
         lock.release();
         Machine.interrupt().restore(intStatus);
         return word;
