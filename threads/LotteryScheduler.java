@@ -73,7 +73,7 @@ public class LotteryScheduler extends PriorityScheduler {
 
             for(KThread t: queue){
 				LotteryThreadState state=getThreadState(t);
-                state_tic=state.getEffectivePriority();
+                int state_tic=state.getEffectivePriority();
                 if(tic<state_tic){
                     ret=state;
                     break;

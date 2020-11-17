@@ -113,7 +113,7 @@ public class UserProcess {
         return vaddr/pageSize;
     }
 
-    public int getVPO(int addr){
+    public int getVPO(int vaddr){
         return vaddr%pageSize;
     }
 
@@ -156,24 +156,24 @@ public class UserProcess {
         int amount = Math.min(length, memory.length-vaddr);
         //System.arraycopy(memory, vaddr, data, offset, amount);
 
-        int cnt=0;
+        int cnt=0,vpn,vpo,ppn;
 
         vpn=getVPN(vaddr);
         vpo=getVPO(vaddr);
 
         MemReadWriteLock.acquire();
 
-        ppn=pageTable[vpn];
-        System.arraycopy(memory, ppn*pageSize, data, offset, min(pageSize-vpo,amount));
+        ppn=pageTable[vpn].ppn;
+        System.arraycopy(memory, ppn*pageSize, data, offset, Math.min(pageSize-vpo,amount));
         pageTable[ppn].used=true;
-        cnt+=min(pageSize-vpo,amount);
+        cnt+=Math.min(pageSize-vpo,amount);
         
         while(cnt<amount){
             vpn++;
-            ppn=pageTable[vpn];
-            System.arraycopy(memory, ppn*pageSize, data, offset+cnt, min(pageSize,amount-cnt));
+            ppn=pageTable[vpn].ppn;
+            System.arraycopy(memory, ppn*pageSize, data, offset+cnt, Math.min(pageSize,amount-cnt));
             pageTable[ppn].used=true;
-            cnt+=min(pageSize,amount-cnt);
+            cnt+=Math.min(pageSize,amount-cnt);
         }
 
         MemReadWriteLock.release();
@@ -221,7 +221,7 @@ public class UserProcess {
         int amount = Math.min(length, memory.length-vaddr);
         //System.arraycopy(data, offset, memory, vaddr, amount);
         
-        int cnt=0;
+        int cnt=0,vpn,vpo,ppn;
 
         vpn=getVPN(vaddr);
         vpo=getVPO(vaddr);
@@ -230,27 +230,27 @@ public class UserProcess {
         
         MemReadWriteLock.acquire();
 
-        ppn=pageTable[vpn];
+        ppn=pageTable[vpn].ppn;
         if(pageTable[vpn].readOnly==true){
             MemReadWriteLock.release();
             handleExit();// to be completed
         }
-        System.arraycopy(data, offset, memory, ppn*pageSize, min(pageSize-vpo,amount));
+        System.arraycopy(data, offset, memory, ppn*pageSize, Math.min(pageSize-vpo,amount));
         pageTable[ppn].used=true;
         pageTable[ppn].dirty=true;
-        cnt+=min(pageSize-vpo,amount);
+        cnt+=Math.min(pageSize-vpo,amount);
         
         while(cnt<amount){
             vpn++;
-            ppn=pageTable[vpn];
+            ppn=pageTable[vpn].ppn;
             if(pageTable[vpn].readOnly==true){
                 MemReadWriteLock.release();
                 handleExit();// to be completed
             }
-            System.arraycopy(data, offset+cnt, memory, ppn*pageSize, min(pageSize,amount-cnt));
+            System.arraycopy(data, offset+cnt, memory, ppn*pageSize, Math.min(pageSize,amount-cnt));
             pageTable[ppn].used=true;
             pageTable[ppn].dirty=true;
-            cnt+=min(pageSize,amount-cnt);
+            cnt+=Math.min(pageSize,amount-cnt);
         }
 
         MemReadWriteLock.release();
@@ -360,20 +360,20 @@ public class UserProcess {
             return false;
         }
 
-        FreePageListLock.acquire();
+        UserKernel.FreePageListLock.acquire();
         for(int i=0;i<numPages;i++){
             
-            if(FreePageList.size()==0){
-                FreePageListLock.release();
+            if(UserKernel.FreePageList.size()==0){
+                UserKernel.FreePageListLock.release();
                 handleExit(); // to be completed
             }
 
-            int ppn=FreePageList.removeFirst();
+            int ppn=UserKernel.FreePageList.removeFirst();
 
             pageTable[i]=new TranslationEntry(i,ppn, true,false,false,false);
 
         }
-        FreePageListLock.release();
+        UserKernel.FreePageListLock.release();
 
         // load sections
         for (int s=0; s<coff.getNumSections(); s++) {
@@ -385,7 +385,7 @@ public class UserProcess {
             for (int i=0; i<section.getLength(); i++) {
                 int vpn = section.getFirstVPN()+i;
 
-                int ppn=pageTable[vpn];
+                int ppn=pageTable[vpn].ppn;
                 pageTable[vpn].readOnly=section.isReadOnly();
                 // for now, just assume virtual addresses=physical addresses
                 section.loadPage(i, ppn);
@@ -400,10 +400,10 @@ public class UserProcess {
      */
     protected void unloadSections() {
 
-        FreePageListLock.acquire();
+        UserKernel.FreePageListLock.acquire();
         for(int i=0;i<numPages;i++)
-            FreePageList.add(i);
-        FreePageListLock.release();
+            UserKernel.FreePageList.add(i);
+        UserKernel.FreePageListLock.release();
         
     }    
 
