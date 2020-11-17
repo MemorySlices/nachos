@@ -163,6 +163,9 @@ public class PriorityScheduler extends Scheduler {
      * A <tt>ThreadQueue</tt> that sorts threads by priority.
      */
     protected class PriorityQueue extends ThreadQueue {
+		PriorityQueue(){
+		}
+
 		PriorityQueue(boolean transferPriority) {
 			this.transferPriority = transferPriority;
 		}
@@ -286,6 +289,9 @@ public class PriorityScheduler extends Scheduler {
 		 *
 		 * @param	thread	the thread this state belongs to.
 		 */
+		public ThreadState(){
+		}
+
 		public ThreadState(KThread thread) {
 			this.thread = thread;
 			
@@ -412,7 +418,7 @@ public class PriorityScheduler extends Scheduler {
 		int effectivepriority;
 		long T;
 
-		private LinkedList<PriorityQueue> hold = new LinkedList<PriorityQueue>(), wait = new LinkedList<PriorityQueue>();
+		public LinkedList<PriorityQueue> hold = new LinkedList<PriorityQueue>(), wait = new LinkedList<PriorityQueue>();
 	}
 
 	public static void selfTest(){

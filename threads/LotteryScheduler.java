@@ -6,6 +6,8 @@ import java.util.TreeSet;
 import java.util.HashSet;
 import java.util.Iterator;
 
+import java.util.Random;
+
 /**
  * A scheduler that chooses threads using a lottery.
  *
@@ -33,16 +35,83 @@ public class LotteryScheduler extends PriorityScheduler {
     public LotteryScheduler() {
     }
     
-    /**
-     * Allocate a new lottery thread queue.
-     *
-     * @param	transferPriority	<tt>true</tt> if this queue should
-     *					transfer tickets from waiting threads
-     *					to the owning thread.
-     * @return	a new lottery thread queue.
-     */
+    public static final int priorityDefault = 1;
+    public static final int priorityMinimum = 1;
+    public static final int priorityMaximum = Integer.MAX_VALUE;  
+
     public ThreadQueue newThreadQueue(boolean transferPriority) {
-	// implement me
-	return null;
+        return new LotteryQueue(transferPriority);
     }
+
+    protected LotteryThreadState getThreadState(KThread thread) {
+		if (thread.schedulingState == null)
+			thread.schedulingState = new LotteryThreadState(thread);
+
+		return (LotteryThreadState) thread.schedulingState;
+    }
+
+    protected class LotteryQueue extends PriorityQueue{
+        LotteryQueue(boolean transferPriority) {
+            this.transferPriority = transferPriority;
+            ra=new Random(1114);
+		}
+
+        protected LotteryThreadState pickNextThread() {
+			// implement me
+			Lib.assertTrue(Machine.interrupt().disabled());
+			
+			//print();
+
+			int sum=0,tic;
+			LotteryThreadState ret=null;
+			for(KThread t: queue){
+				LotteryThreadState state=getThreadState(t);
+				sum+=state.getEffectivePriority();
+			}
+
+            tic=ra.nextInt(sum);
+
+            for(KThread t: queue){
+				LotteryThreadState state=getThreadState(t);
+                int state_tic=state.getEffectivePriority();
+                if(tic<state_tic){
+                    ret=state;
+                    break;
+                }
+                tic-=state_tic;
+            }
+            
+			return ret;
+        }
+        
+        public Random ra;
+    }
+
+    protected class LotteryThreadState extends ThreadState{
+        public LotteryThreadState(KThread thread) {
+			this.thread = thread;
+			setPriority(priorityDefault);
+		}
+
+		public void calculate_priority(){
+			// need recursion
+			int sum=this.getPriority();
+			for(PriorityQueue Q: hold){
+				if(Q.transferPriority==false) continue;
+				for(KThread t: Q.queue){
+					LotteryThreadState state=getThreadState(t);
+					sum+=state.getEffectivePriority();
+				}
+			}
+			if(this.effectivepriority!=sum){
+				this.effectivepriority=sum;
+				for(PriorityQueue Q: wait){
+					if(Q.transferPriority==false) continue;
+					if(Q.holder!=null){
+						Q.holder.calculate_priority();
+					}
+				}
+			}
+		}
+	}
 }
