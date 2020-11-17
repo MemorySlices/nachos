@@ -20,13 +20,19 @@ public class UserKernel extends ThreadedKernel {
      * processor's exception handler.
      */
     public void initialize(String[] args) {
-	super.initialize(args);
+    	super.initialize(args);
 
-	console = new SynchConsole(Machine.console());
-	
-	Machine.processor().setExceptionHandler(new Runnable() {
-		public void run() { exceptionHandler(); }
-	    });
+    	console = new SynchConsole(Machine.console());
+    	
+    	Machine.processor().setExceptionHandler(new Runnable() {
+    		public void run() { exceptionHandler(); }
+    	    });
+
+        for(int i=0;i<Machine.processor().getNumPhysPages();i++){
+            FreePageList.add(i);
+        }
+
+        FreePageListLock=new Lock();
     }
 
     /**
@@ -112,4 +118,8 @@ public class UserKernel extends ThreadedKernel {
 
     // dummy variables to make javac smarter
     private static Coff dummy1 = null;
+
+    //xhk
+    public static Linkedlist<integer> FreePageList;
+    public static Lock FreePageListLock;
 }
