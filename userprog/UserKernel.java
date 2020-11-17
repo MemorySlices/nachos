@@ -29,6 +29,8 @@ public class UserKernel extends ThreadedKernel {
     	Machine.processor().setExceptionHandler(new Runnable() {
     		public void run() { exceptionHandler(); }
     	    });
+        
+        FreePageList= new LinkedList<Integer>();
 
         for(int i=0;i<Machine.processor().getNumPhysPages();i++){
             FreePageList.add(i);

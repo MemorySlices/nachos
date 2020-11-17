@@ -24,6 +24,9 @@ public class UserProcess {
      * Allocate a new process.
      */
     public UserProcess() {
+
+        System.out.println("new process");
+
         int numPhysPages = Machine.processor().getNumPhysPages();
         pageTable = new TranslationEntry[numPhysPages];
         for (int i=0; i<numPhysPages; i++)
@@ -369,6 +372,9 @@ public class UserProcess {
             Lib.debug(dbgProcess, "\tinsufficient physical memory");
             return false;
         }
+        
+        System.out.println(numPages);
+        System.out.println(Machine.processor().getNumPhysPages());
 
         UserKernel.FreePageListLock.acquire();
         for(int i=0;i<numPages;i++){
