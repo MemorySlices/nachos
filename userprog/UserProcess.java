@@ -233,7 +233,8 @@ public class UserProcess {
         ppn=pageTable[vpn].ppn;
         if(pageTable[vpn].readOnly==true){
             MemReadWriteLock.release();
-            handleExit();// to be completed
+            System.out.println("invalid write to read only memory!");
+            //handleExit();// to be completed
         }
         System.arraycopy(data, offset, memory, ppn*pageSize, Math.min(pageSize-vpo,amount));
         pageTable[ppn].used=true;
@@ -245,7 +246,8 @@ public class UserProcess {
             ppn=pageTable[vpn].ppn;
             if(pageTable[vpn].readOnly==true){
                 MemReadWriteLock.release();
-                handleExit();// to be completed
+                System.out.println("invalid write to read only memory!");
+                //handleExit();// to be completed
             }
             System.arraycopy(data, offset+cnt, memory, ppn*pageSize, Math.min(pageSize,amount-cnt));
             pageTable[ppn].used=true;
@@ -365,7 +367,8 @@ public class UserProcess {
             
             if(UserKernel.FreePageList.size()==0){
                 UserKernel.FreePageListLock.release();
-                handleExit(); // to be completed
+                System.out.println("no free page!");
+                //handleExit(); // to be completed
             }
 
             int ppn=UserKernel.FreePageList.removeFirst();
