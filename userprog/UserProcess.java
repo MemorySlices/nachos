@@ -3,6 +3,7 @@ package nachos.userprog;
 import nachos.machine.*;
 import nachos.threads.*;
 import nachos.userprog.*;
+import java.util.*;
 
 import java.io.EOFException;
 
@@ -27,6 +28,10 @@ public class UserProcess {
 	pageTable = new TranslationEntry[numPhysPages];
 	for (int i=0; i<numPhysPages; i++)
 	    pageTable[i] = new TranslationEntry(i,i, true,false,false,false);
+
+    numP++;
+    Pid = numP;
+    aliveP++;
     }
     
     /**
@@ -52,8 +57,10 @@ public class UserProcess {
 	if (!load(name, args))
 	    return false;
 	
-	new UThread(this).setName(name).fork();
-
+	UThread thread = new UThread(this);
+    if(mainThread == null)
+        mainThread = thread;
+    thread.setName(name).fork();
 	return true;
     }
 
@@ -339,13 +346,104 @@ public class UserProcess {
      * Handle the halt() system call. 
      */
     private int handleHalt() {
-
-	Machine.halt();
-	
-	Lib.assertNotReached("Machine.halt() did not halt machine!");
-	return 0;
+        Machine.halt();
+        Lib.assertNotReached("Machine.halt() did not halt machine!");
+        return 0;
+    }
+    
+    private int handleExit(int status) {
+        int res = -1;
+        exitCode = status;
+        unloadSections();
+        aliveP--;
+        if(aliveP==0)
+            Kernel.kernel.terminate();
+        else
+            UThread.finish();
+        res = 0;
+        return res;
     }
 
+    class SyscallException extends Exception {
+        private static boolean PrintStackTrace = false;
+
+        public void print() {
+            if (PrintStackTrace)
+                printStackTrace();
+        }
+
+        public SyscallException(String warning) {
+            super(warning);
+        }
+
+        public static void check(boolean tag) throws SyscallException {
+            if (!tag)
+                throw new SyscallException("Wrong!");
+        }
+
+        public static void check(boolean tag, String warning) throws SyscallException {
+            if (!tag) 
+                throw new SyscallException(warning);
+        }
+    }
+
+    void checkAddrValidity(int addr) throws SyscallException {
+        if(Addr<0 || addr/pageSize>=numPages)
+            throw new SyscallException("invalid address");
+    }
+
+    private int handleJoin(int pid, int resAddr){
+        int res = -1;
+        try{
+            checkAddrValidity(resAddr);
+            UserProcess childProcess = null;
+            for (UserProcess child : children)
+                if(child.Pid == pid){
+                    childProcess = child;
+                    break;
+                }
+            SyscallException.check(childProcess!=null && !childProcess.joint);
+            childProcess.joint = true;
+            childProcess.mainThread.join();
+            byte[] exitBytes = Lib.bytesFromInt(childProcess.exitCode);
+            SyscallException.check(writeVirtualMemory(retStatusAddr, exitBytes) == 4);
+            if (childProcess.UException != NO_EXCEPTION)
+                res = 0;
+            else
+                ret = 1;
+        } catch(SyscallException e){
+            e.print();
+        }
+        return res;   
+    }
+
+    private handleExec(int fileAddr, int argc, int argvAddr){
+        int res = -1;
+        try{
+            checkAddrValidity(fileAddr);
+            checkAddrValidity(argvAddr);
+            SyscallException.check(argc>=0 && argc<256);
+            String file = readVirtualMemoryString(fileAddr, 256);
+            String[] argv = new String[argc];
+            for(i=0; i<argc; i++){
+                byte[] argbytes = new byte[4];
+                SyscallException.check(readVirtualMemory(argvAddr + i * 4, argbytes) == 4);
+                int argAddr = Lib.bytesToInt(argbytes, 0);
+                checkAddrValidity(argAddr);
+                argv[i] = readVirtualMemoryString(argAddr, 256);
+            }
+            UserProcess child = new UserProcess();
+            children.add(child);
+            if(!child.execute(file, argv))
+                res = -1;
+            else
+                res = child.Pid;
+            return res;
+        }
+        else catch(SyscallException e){
+            e.print();
+        }
+    }
 
     private static final int
         syscallHalt = 0,
@@ -391,7 +489,12 @@ public class UserProcess {
 	switch (syscall) {
 	case syscallHalt:
 	    return handleHalt();
-
+    case syscallExit:
+        return handleExit(a0);
+    case syscallExec:
+        return handleExec(a0, a1, a2);
+    case syscallJoin:
+        return handleJoin(a0, a1);
 
 	default:
 	    Lib.debug(dbgProcess, "Unknown syscall " + syscall);
@@ -426,6 +529,8 @@ public class UserProcess {
 	default:
 	    Lib.debug(dbgProcess, "Unexpected exception: " +
 		      Processor.exceptionNames[cause]);
+        Uexception = cause;
+        handleExit(0);
 	    Lib.assertNotReached("Unexpected exception");
 	}
     }
@@ -443,7 +548,17 @@ public class UserProcess {
     
     private int initialPC, initialSP;
     private int argc, argv;
-	
+
+    private int exitCode = 0;
+    private int aliveP = 0;
+    private int Pid = 0;
+    private int numP = 0;
+    private LinkedList<UserProcess> children = new LinkedList<>();
+    public int NO_EXCEPTION = -1;
+    private int Uexception = NO_EXCEPTION;
+    public boolean joint = true;
+    private UThread mainThread = null;
+
     private static final int pageSize = Processor.pageSize;
     private static final char dbgProcess = 'a';
 }
