@@ -585,7 +585,7 @@ public class UserProcess {
     public int handleSyscall(int syscall, int a0, int a1, int a2, int a3) {
 	switch (syscall) {
 	case syscallHalt:
-	    return handleHalt();
+	    return Pid != 1 ? -1 : handleHalt();
 
     // wyh
     case syscallExit:
