@@ -29,6 +29,9 @@ public class UserProcess {
 
         int numPhysPages = Machine.processor().getNumPhysPages();
         pageTable = new TranslationEntry[numPhysPages];
+
+        System.out.println("pagetable length "+pageTable.length);
+
         for (int i=0; i<numPhysPages; i++)
             pageTable[i] = new TranslationEntry(i,i, true,false,false,false);
         /** added by consecutivelimit */
@@ -37,7 +40,6 @@ public class UserProcess {
         openFiles[1] = UserKernel.console.openForWriting();
 
         // xhk
-        pageTable = new TranslationEntry[numPages];
         MemReadWriteLock=new Lock();
 
         // wyh
@@ -245,7 +247,7 @@ public class UserProcess {
         if(pageTable[vpn].readOnly==true){
             MemReadWriteLock.release();
             System.out.println("invalid write to read only memory!");
-            //handleExit();// to be completed
+            handleExit(0);// to be completed
         }
         System.arraycopy(data, offset, memory, ppn*pageSize, Math.min(pageSize-vpo,amount));
         pageTable[ppn].used=true;
@@ -258,7 +260,7 @@ public class UserProcess {
             if(pageTable[vpn].readOnly==true){
                 MemReadWriteLock.release();
                 System.out.println("invalid write to read only memory!");
-                //handleExit();// to be completed
+                handleExit(0);// to be completed
             }
             System.arraycopy(data, offset+cnt, memory, ppn*pageSize, Math.min(pageSize,amount-cnt));
             pageTable[ppn].used=true;
@@ -373,8 +375,8 @@ public class UserProcess {
             return false;
         }
         
-        System.out.println(numPages);
-        System.out.println(Machine.processor().getNumPhysPages());
+        System.out.println("numpages "+numPages);
+        System.out.println("numphyspages "+Machine.processor().getNumPhysPages());
 
         UserKernel.FreePageListLock.acquire();
         for(int i=0;i<numPages;i++){
@@ -382,10 +384,13 @@ public class UserProcess {
             if(UserKernel.FreePageList.size()==0){
                 UserKernel.FreePageListLock.release();
                 System.out.println("no free page!");
-                //handleExit(); // to be completed
+                handleExit(0); // to be completed
             }
 
             int ppn=UserKernel.FreePageList.removeFirst();
+
+            System.out.println("ppn: "+ppn);
+            System.out.println("pagetable length: "+pageTable.length);
 
             pageTable[i]=new TranslationEntry(i,ppn, true,false,false,false);
 
@@ -451,6 +456,9 @@ public class UserProcess {
      * Handle the halt() system call. 
      */
     private int handleHalt() {
+        if (Pid != 1) {            return -1;
+        }
+
         Machine.halt();
         Lib.assertNotReached("Machine.halt() did not halt machine!");
         return 0;
