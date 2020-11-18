@@ -185,6 +185,7 @@ public class UserProcess {
         MemReadWriteLock.acquire();
         
         if(pageTable[vpn]==null || pageTable[vpn].valid!=true){
+            MemReadWriteLock.release();
             System.out.println("-----read from invalid page-----");
             return 0;
         }
@@ -197,6 +198,7 @@ public class UserProcess {
         while(cnt<amount){
             vpn++;
             if(pageTable[vpn]==null || pageTable[vpn].valid!=true){
+                MemReadWriteLock.release();
                 System.out.println("-----read from invalid page-----");
                 return cnt;
             }
