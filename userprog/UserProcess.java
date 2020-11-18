@@ -420,6 +420,8 @@ public class UserProcess {
             }
         }
         
+        System.out.println("-----load sections ends-----");
+
         return true;
     }
 
