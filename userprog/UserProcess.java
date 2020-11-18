@@ -613,7 +613,7 @@ public class UserProcess {
     }
     
     private int handleRead(int a0, int a1, int a2) {
-        if(a0 <= 0 || a0 > 16 || openFiles[a0] == null || a1 < 0 || a1 >= numPages*pageSize || a2 < 0) return -1;
+        if(a0 < 0 || a0 >= 16 || openFiles[a0] == null || a1 < 0 || a1 >= numPages*pageSize || a2 < 0) return -1;
 	try {
 	    byte[] dataRead = new byte[a2];
 	    int cnt = openFiles[a0].read(dataRead, 0, a2);
@@ -623,7 +623,7 @@ public class UserProcess {
     }
     
     private int handleWrite(int a0, int a1, int a2) {
-        if(a0 <= 0 || a0 > 16 || openFiles[a0] == null || a1 < 0 || a1 >= numPages*pageSize || a2 < 0) return -1;
+        if(a0 < 0 || a0 >= 16 || openFiles[a0] == null || a1 < 0 || a1 >= numPages*pageSize || a2 < 0) return -1;
 	try {
 	    byte[] dataWrite = new byte[a2];
 	    if(readVirtualMemory(a1, dataWrite, 0, a2) != a2) return -1;
