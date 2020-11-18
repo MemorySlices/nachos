@@ -598,6 +598,47 @@ public class UserProcess {
             res = child.Pid;
         return res;
     }
+    
+    private int handleCreateOpen(int a0, boolean create) {
+        int id = 0; while(id < 16 && openFiles[id] != null) id++;
+	if(id == 16) return -1;
+	String fileOpen = readVirtualMemoryString(a0, 256);
+	openFiles[id] = fileOpen == null ? null : ThreadedKernel.fileSystem.open(fileOpen, create);
+	if(openFiles[id] == null) return -1;
+	return id;
+    }
+    
+    private int handleRead(int a0, int a1, int a2) {
+        if(a0 <= 0 || a0 > 16 || openFiles[a0] == null || a1 < 0 || a1 >= numPages*pageSize || a2 < 0) return -1;
+	try {
+	    byte[] dataRead = new byte[a2];
+	    int cnt = openFiles[a0].read(dataRead, 0, a2);
+	    return writeVirtualMemory(a1, dataRead, 0, cnt) == cnt ? cnt : -1;
+	}
+	catch(Throwable t) { return -1; }
+    }
+    
+    private int handleWrite(int a0, int a1, int a2) {
+        if(a0 <= 0 || a0 > 16 || openFiles[a0] == null || a1 < 0 || a1 >= numPages*pageSize || a2 < 0) return -1;
+	try {
+	    byte[] dataWrite = new byte[a2];
+	    if(readVirtualMemory(a1, dataWrite, 0, a2) != a2) return -1;
+	    return openFiles[a0].write(dataWrite, 0, a2) == a2 ? a2 : -1;
+	}
+	catch(Throwable t) { return -1; }
+    }
+    
+    private int handleClose(int a0) {
+        if(a0 <= 0 || a0 > 16 || openFiles[a0] == null) return -1;
+	openFiles[a0].close();
+	openFiles[a0] = null;
+	return 0;
+    }
+    
+    private int handleUnlink(int a0) {
+        String fileRemove = readVirtualMemoryString(a0, 256);
+	return fileRemove == null || !ThreadedKernel.fileSystem.remove(fileRemove) ? -1 : 0;
+    }
 
     private static final int
         syscallHalt = 0,
@@ -645,7 +686,7 @@ public class UserProcess {
 
         switch (syscall) {
             case syscallHalt:
-                return Pid != 1 ? -1 : handleHalt();
+                return handleHalt();
 
             // wyh
             case syscallExit:
@@ -656,38 +697,17 @@ public class UserProcess {
                 return handleJoin(a0, a1);
 
             /** added by consecutivelimit */
-        case syscallCreate:
-	case syscallOpen:
-	    int id = 0; while(id < 16 && openFiles[id] != null) id++;
-	    if(id == 16) return -1;
-	    String fileOpen = readVirtualMemoryString(a0, 256);
-	    openFiles[id] = fileOpen == null ? null : ThreadedKernel.fileSystem.open(fileOpen, syscall == syscallCreate);
-	    if(openFiles[id] == null) return -1;
-	    return id;
-	case syscallRead:
-	    if(a0 <= 0 || a0 > 16 || openFiles[a0] == null || a1 < 0 || a2 < 0) return -1;
-	    try {
-	        byte[] dataRead = new byte[a2];
-	        int cnt = openFiles[a0].read(dataRead, 0, a2);
-	        return writeVirtualMemory(a1, dataRead, 0, cnt) == cnt ? cnt : -1;
-	    }
-	    catch(Throwable t) { return -1; }
-	case syscallWrite:
-	    if(a0 <= 0 || a0 > 16 || openFiles[a0] == null || a1 < 0 || a2 < 0) return -1;
-	    try {
-	        byte[] dataWrite = new byte[a2];
-	        if(readVirtualMemory(a1, dataWrite, 0, a2) != a2) return -1;
-	        return openFiles[a0].write(dataWrite, 0, a2) == a2 ? a2 : -1;
-	    }
-	    catch(Throwable t) { return -1; }
-	case syscallClose:
-	    if(a0 <= 0 || a0 > 16 || openFiles[a0] == null) return -1;
-	    openFiles[a0].close();
-	    openFiles[a0] = null;
-	    return 0;
-	case syscallUnlink:
-	    String fileRemove = readVirtualMemoryString(a0, 256);
-	    return fileRemove == null || !ThreadedKernel.fileSystem.remove(fileRemove) ? -1 : 0;
+            case syscallCreate:
+	    case syscallOpen:
+	        return handleCreateOpen(a0, syscall == syscallCreate);
+	    case syscallRead:
+	        return handleRead(a0, a1, a2);
+	    case syscallWrite:
+	        return handleWrite(a0, a1, a2);
+	    case syscallClose:
+	        return handleClose(a0);
+	    case syscallUnlink:
+	        return handleUnlink(a0);
             default:
                 Lib.debug(dbgProcess, "Unknown syscall " + syscall);
                 Lib.assertNotReached("Unknown system call!");
