@@ -68,7 +68,7 @@ public class UserProcess {
      * @return	<tt>true</tt> if the program was successfully executed.
      */
     public boolean execute(String name, String[] args) {
-        System.out.println("-----start system execute-----");
+        //System.out.println("-----start system execute-----");
 
         if (!load(name, args))
             return false;
@@ -77,7 +77,7 @@ public class UserProcess {
         if(mainThread == null)
             mainThread = thread;
 
-        System.out.println("-----start system fork-----");
+        //System.out.println("-----start system fork-----");
 
         thread.setName(name).fork();
         return true;
@@ -164,7 +164,7 @@ public class UserProcess {
     public int readVirtualMemory(int vaddr, byte[] data, int offset,
                  int length) {
 
-        System.out.println("-----start read virtual memory-----");
+        //System.out.println("-----start read virtual memory-----");
 
         Lib.assertTrue(offset >= 0 && length >= 0 && offset+length <= data.length);
 
@@ -241,7 +241,7 @@ public class UserProcess {
     public int writeVirtualMemory(int vaddr, byte[] data, int offset,
                   int length) {
 
-        System.out.println("-----start write virtual memory-----");
+        //System.out.println("-----start write virtual memory-----");
 
         Lib.assertTrue(offset >= 0 && length >= 0 && offset+length <= data.length);
 
@@ -388,7 +388,7 @@ public class UserProcess {
             stringOffset += 1;
         }
         
-        System.out.println("-----system load ends-----");
+        //System.out.println("-----system load ends-----");
 
         return true;
     }
@@ -407,8 +407,8 @@ public class UserProcess {
             return false;
         }
         
-        System.out.println("-----start load sections-----");
-        System.out.println("numpages: "+numPages+" numphyspages: "+Machine.processor().getNumPhysPages());
+        //System.out.println("-----start load sections-----");
+        //System.out.println("numpages: "+numPages+" numphyspages: "+Machine.processor().getNumPhysPages());
 
         UserKernel.FreePageListLock.acquire();
         for(int i=0;i<numPages;i++){
@@ -421,7 +421,7 @@ public class UserProcess {
 
             int ppn=UserKernel.FreePageList.removeFirst();
 
-            System.out.println("allocating virtual page: "+i+" ppn: "+ppn);
+            //System.out.println("allocating virtual page: "+i+" ppn: "+ppn);
             //System.out.println("pagetable length: "+pageTable.length);
 
             pageTable[i]=new TranslationEntry(i,ppn, true,false,false,false);
@@ -446,7 +446,7 @@ public class UserProcess {
             }
         }
         
-        System.out.println("-----load sections ends-----");
+        //System.out.println("-----load sections ends-----");
 
         return true;
     }
@@ -456,7 +456,7 @@ public class UserProcess {
      */
     protected void unloadSections() {
 
-        System.out.println("-----start unload sections-----");
+        //System.out.println("-----start unload sections-----");
 
         UserKernel.FreePageListLock.acquire();
         for(int i=0;i<numPages;i++)
@@ -498,7 +498,7 @@ public class UserProcess {
      */
     private int handleHalt() {
         //xhk
-        System.out.println("-----start handle halt-----");
+        //System.out.println("-----start handle halt-----");
 
         if (Pid != 1) {            return -1;
         }
@@ -510,7 +510,7 @@ public class UserProcess {
     
     private int handleExit(int status) {
         //xhk
-        System.out.println("-----start handle exit-----");
+        //System.out.println("-----start handle exit-----");
 
         int res = -1;
         exitCode = status;
@@ -535,7 +535,7 @@ public class UserProcess {
 
     private int handleJoin(int pid, int resAddr){
         //xhk
-        System.out.println("-----start handle join-----");
+        //System.out.println("-----start handle join-----");
 
         int res = -1;
         if(!checkAddrValidity(resAddr))
@@ -566,7 +566,7 @@ public class UserProcess {
 
     private int handleExec(int fileAddr, int argc, int argvAddr){
         //xhk
-        System.out.println("-----start handle exec-----");
+        //System.out.println("-----start handle exec-----");
 
         int res = -1;
         if(!checkAddrValidity(fileAddr))
@@ -686,7 +686,7 @@ public class UserProcess {
      */
     public int handleSyscall(int syscall, int a0, int a1, int a2, int a3) {
         //xhk
-        System.out.println("-----start handle syscall-----");
+        //System.out.println("-----start handle syscall-----");
 
         switch (syscall) {
             case syscallHalt:
@@ -729,7 +729,7 @@ public class UserProcess {
      */
     public void handleException(int cause) {
         //xhk
-        System.out.println("-----start handle exception-----");
+        //System.out.println("-----start handle exception-----");
 
         Processor processor = Machine.processor();
 
