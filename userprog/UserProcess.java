@@ -633,7 +633,7 @@ public class UserProcess {
     }
     
     private int handleClose(int a0) {
-        if(a0 <= 0 || a0 > 16 || openFiles[a0] == null) return -1;
+        if(a0 < 0 || a0 >= 16 || openFiles[a0] == null) return -1;
 	openFiles[a0].close();
 	openFiles[a0] = null;
 	return 0;
