@@ -30,7 +30,7 @@ public class UserProcess {
         int numPhysPages = Machine.processor().getNumPhysPages();
         pageTable = new TranslationEntry[numPhysPages];
 
-        System.out.println("pagetable length "+pageTable.length);
+        System.out.println("pagetable length: "+pageTable.length);
 
         for (int i=0; i<numPhysPages; i++)
             pageTable[i] = new TranslationEntry(i,i, true,false,false,false);
@@ -56,7 +56,7 @@ public class UserProcess {
      * @return	a new process of the correct class.
      */
     public static UserProcess newUserProcess() {
-	return (UserProcess)Lib.constructObject(Machine.getProcessClassName());
+	    return (UserProcess)Lib.constructObject(Machine.getProcessClassName());
     }
 
     /**
@@ -68,14 +68,14 @@ public class UserProcess {
      * @return	<tt>true</tt> if the program was successfully executed.
      */
     public boolean execute(String name, String[] args) {
-	if (!load(name, args))
-	    return false;
-	
-	UThread thread = new UThread(this);
-    if(mainThread == null)
-        mainThread = thread;
-    thread.setName(name).fork();
-	return true;
+        if (!load(name, args))
+            return false;
+        
+        UThread thread = new UThread(this);
+        if(mainThread == null)
+            mainThread = thread;
+        thread.setName(name).fork();
+        return true;
     }
 
     /**
@@ -90,7 +90,7 @@ public class UserProcess {
      * <tt>UThread.restoreState()</tt>.
      */
     public void restoreState() {
-	Machine.processor().setPageTable(pageTable);
+	    Machine.processor().setPageTable(pageTable);
     }
 
     /**
@@ -108,18 +108,18 @@ public class UserProcess {
      *		found.
      */
     public String readVirtualMemoryString(int vaddr, int maxLength) {
-	Lib.assertTrue(maxLength >= 0);
+        Lib.assertTrue(maxLength >= 0);
 
-	byte[] bytes = new byte[maxLength+1];
+        byte[] bytes = new byte[maxLength+1];
 
-	int bytesRead = readVirtualMemory(vaddr, bytes);
+        int bytesRead = readVirtualMemory(vaddr, bytes);
 
-	for (int length=0; length<bytesRead; length++) {
-	    if (bytes[length] == 0)
-		return new String(bytes, 0, length);
-	}
+        for (int length=0; length<bytesRead; length++) {
+            if (bytes[length] == 0)
+            return new String(bytes, 0, length);
+        }
 
-	return null;
+        return null;
     }
 
     public int getVPN(int vaddr){
@@ -139,7 +139,7 @@ public class UserProcess {
      * @return	the number of bytes successfully transferred.
      */
     public int readVirtualMemory(int vaddr, byte[] data) {
-	return readVirtualMemory(vaddr, data, 0, data.length);
+	    return readVirtualMemory(vaddr, data, 0, data.length);
     }
 
     /**
@@ -158,6 +158,9 @@ public class UserProcess {
      */
     public int readVirtualMemory(int vaddr, byte[] data, int offset,
                  int length) {
+
+        System.out.println("-----start read virtual memory-----");
+
         Lib.assertTrue(offset >= 0 && length >= 0 && offset+length <= data.length);
 
         byte[] memory = Machine.processor().getMemory();
@@ -223,6 +226,9 @@ public class UserProcess {
      */
     public int writeVirtualMemory(int vaddr, byte[] data, int offset,
                   int length) {
+
+        System.out.println("-----start write virtual memory-----");
+
         Lib.assertTrue(offset >= 0 && length >= 0 && offset+length <= data.length);
 
         byte[] memory = Machine.processor().getMemory();
@@ -375,8 +381,8 @@ public class UserProcess {
             return false;
         }
         
-        System.out.println("numpages "+numPages);
-        System.out.println("numphyspages "+Machine.processor().getNumPhysPages());
+        System.out.println("-----start load sections-----");
+        System.out.println("numpages: "+numPages+" numphyspages: "+Machine.processor().getNumPhysPages());
 
         UserKernel.FreePageListLock.acquire();
         for(int i=0;i<numPages;i++){
@@ -389,8 +395,8 @@ public class UserProcess {
 
             int ppn=UserKernel.FreePageList.removeFirst();
 
-            System.out.println("ppn: "+ppn);
-            System.out.println("pagetable length: "+pageTable.length);
+            System.out.println("allocating virtual page: "+i+" ppn: "+ppn);
+            //System.out.println("pagetable length: "+pageTable.length);
 
             pageTable[i]=new TranslationEntry(i,ppn, true,false,false,false);
 
@@ -422,11 +428,14 @@ public class UserProcess {
      */
     protected void unloadSections() {
 
+        System.out.println("-----start unload sections-----");
+
         UserKernel.FreePageListLock.acquire();
         for(int i=0;i<numPages;i++)
             UserKernel.FreePageList.add(i);
         UserKernel.FreePageListLock.release();
         
+        //xhk: need to close file as well?
     }    
 
     /**
@@ -437,25 +446,28 @@ public class UserProcess {
      * and initialize all other registers to 0.
      */
     public void initRegisters() {
-	Processor processor = Machine.processor();
+        Processor processor = Machine.processor();
 
-	// by default, everything's 0
-	for (int i=0; i<processor.numUserRegisters; i++)
-	    processor.writeRegister(i, 0);
+        // by default, everything's 0
+        for (int i=0; i<processor.numUserRegisters; i++)
+            processor.writeRegister(i, 0);
 
-	// initialize PC and SP according
-	processor.writeRegister(Processor.regPC, initialPC);
-	processor.writeRegister(Processor.regSP, initialSP);
+        // initialize PC and SP according
+        processor.writeRegister(Processor.regPC, initialPC);
+        processor.writeRegister(Processor.regSP, initialSP);
 
-	// initialize the first two argument registers to argc and argv
-	processor.writeRegister(Processor.regA0, argc);
-	processor.writeRegister(Processor.regA1, argv);
+        // initialize the first two argument registers to argc and argv
+        processor.writeRegister(Processor.regA0, argc);
+        processor.writeRegister(Processor.regA1, argv);
     }
 
     /**
      * Handle the halt() system call. 
      */
     private int handleHalt() {
+        //xhk
+        System.out.println("-----start handle halt-----");
+
         if (Pid != 1) {            return -1;
         }
 
@@ -465,6 +477,9 @@ public class UserProcess {
     }
     
     private int handleExit(int status) {
+        //xhk
+        System.out.println("-----start handle exit-----");
+
         int res = -1;
         exitCode = status;
         unloadSections();
@@ -487,6 +502,9 @@ public class UserProcess {
     }
 
     private int handleJoin(int pid, int resAddr){
+        //xhk
+        System.out.println("-----start handle join-----");
+
         int res = -1;
         if(!checkAddrValidity(resAddr))
             return -1;
@@ -515,6 +533,9 @@ public class UserProcess {
     }
 
     private int handleExec(int fileAddr, int argc, int argvAddr){
+        //xhk
+        System.out.println("-----start handle exec-----");
+
         int res = -1;
         if(!checkAddrValidity(fileAddr))
             return -1;
@@ -552,15 +573,15 @@ public class UserProcess {
 
     private static final int
         syscallHalt = 0,
-	syscallExit = 1,
-	syscallExec = 2,
-	syscallJoin = 3,
-	syscallCreate = 4,
-	syscallOpen = 5,
-	syscallRead = 6,
-	syscallWrite = 7,
-	syscallClose = 8,
-	syscallUnlink = 9;
+        syscallExit = 1,
+        syscallExec = 2,
+        syscallJoin = 3,
+        syscallCreate = 4,
+        syscallOpen = 5,
+        syscallRead = 6,
+        syscallWrite = 7,
+        syscallClose = 8,
+        syscallUnlink = 9;
 
     /**
      * Handle a syscall exception. Called by <tt>handleException()</tt>. The
@@ -591,48 +612,51 @@ public class UserProcess {
      * @return	the value to be returned to the user.
      */
     public int handleSyscall(int syscall, int a0, int a1, int a2, int a3) {
-	switch (syscall) {
-	case syscallHalt:
-	    return Pid != 1 ? -1 : handleHalt();
+        //xhk
+        System.out.println("-----start handle syscall-----");
 
-    // wyh
-    case syscallExit:
-        return handleExit(a0);
-    case syscallExec:
-        return handleExec(a0, a1, a2);
-    case syscallJoin:
-        return handleJoin(a0, a1);
+        switch (syscall) {
+            case syscallHalt:
+                return Pid != 1 ? -1 : handleHalt();
 
-	/** added by consecutivelimit */
-	case syscallCreate:
-	case syscallOpen:
-	    int id = 0; while(id < 16 && openFiles[id] != null) id++;
-	    if(id == 16) return -1;
-	    openFiles[id] = ThreadedKernel.fileSystem.open(readVirtualMemoryString(a0, 256), syscall == syscallCreate);
-	    if(openFiles[id] == null) return -1;
-	    return id;
-	case syscallRead:
-	    if(a0 <= 0 || a0 > 16 || openFiles[a0] == null || a2 < 0) return -1;
-	    byte[] dataRead = new byte[a2];
-	    int cnt = openFiles[a0].read(dataRead, 0, a2);
-	    return writeVirtualMemory(a1, dataRead, 0, cnt) == cnt ? cnt : -1;
-	case syscallWrite:
-	    if(a0 <= 0 || a0 > 16 || openFiles[a0] == null || a2 < 0) return -1;
-	    byte[] dataWrite = new byte[a2];
-	    if(readVirtualMemory(a1, dataWrite, 0, a2) != a2) return -1;
-	    return openFiles[a0].write(dataWrite, 0, a2) == a2 ? a2 : -1;
-	case syscallClose:
-	    if(a0 <= 0 || a0 > 16 || openFiles[a0] == null) return -1;
-	    openFiles[a0].close();
-	    openFiles[a0] = null;
-	    return 0;
-	case syscallUnlink:
-	    return ThreadedKernel.fileSystem.remove(readVirtualMemoryString(a0, 256)) ? 0 : -1;
-	default:
-	    Lib.debug(dbgProcess, "Unknown syscall " + syscall);
-	    Lib.assertNotReached("Unknown system call!");
-	}
-	return 0;
+            // wyh
+            case syscallExit:
+                return handleExit(a0);
+            case syscallExec:
+                return handleExec(a0, a1, a2);
+            case syscallJoin:
+                return handleJoin(a0, a1);
+
+            /** added by consecutivelimit */
+            case syscallCreate:
+            case syscallOpen:
+                int id = 0; while(id < 16 && openFiles[id] != null) id++;
+                if(id == 16) return -1;
+                openFiles[id] = ThreadedKernel.fileSystem.open(readVirtualMemoryString(a0, 256), syscall == syscallCreate);
+                if(openFiles[id] == null) return -1;
+                return id;
+            case syscallRead:
+                if(a0 <= 0 || a0 > 16 || openFiles[a0] == null || a2 < 0) return -1;
+                byte[] dataRead = new byte[a2];
+                int cnt = openFiles[a0].read(dataRead, 0, a2);
+                return writeVirtualMemory(a1, dataRead, 0, cnt) == cnt ? cnt : -1;
+            case syscallWrite:
+                if(a0 <= 0 || a0 > 16 || openFiles[a0] == null || a2 < 0) return -1;
+                byte[] dataWrite = new byte[a2];
+                if(readVirtualMemory(a1, dataWrite, 0, a2) != a2) return -1;
+                return openFiles[a0].write(dataWrite, 0, a2) == a2 ? a2 : -1;
+            case syscallClose:
+                if(a0 <= 0 || a0 > 16 || openFiles[a0] == null) return -1;
+                openFiles[a0].close();
+                openFiles[a0] = null;
+                return 0;
+            case syscallUnlink:
+                return ThreadedKernel.fileSystem.remove(readVirtualMemoryString(a0, 256)) ? 0 : -1;
+            default:
+                Lib.debug(dbgProcess, "Unknown syscall " + syscall);
+                Lib.assertNotReached("Unknown system call!");
+        }
+        return 0;
     }
 
     /**
@@ -644,27 +668,30 @@ public class UserProcess {
      * @param	cause	the user exception that occurred.
      */
     public void handleException(int cause) {
-	Processor processor = Machine.processor();
+        //xhk
+        System.out.println("-----start handle exception-----");
 
-	switch (cause) {
-	case Processor.exceptionSyscall:
-	    int result = handleSyscall(processor.readRegister(Processor.regV0),
-				       processor.readRegister(Processor.regA0),
-				       processor.readRegister(Processor.regA1),
-				       processor.readRegister(Processor.regA2),
-				       processor.readRegister(Processor.regA3)
-				       );
-	    processor.writeRegister(Processor.regV0, result);
-	    processor.advancePC();
-	    break;				       
-				       
-	default:
-	    Lib.debug(dbgProcess, "Unexpected exception: " +
-		      Processor.exceptionNames[cause]);
-        Uexception = cause;
-        handleExit(0);
-	    Lib.assertNotReached("Unexpected exception");
-	}
+        Processor processor = Machine.processor();
+
+        switch (cause) {
+            case Processor.exceptionSyscall:
+                int result = handleSyscall(processor.readRegister(Processor.regV0),
+                            processor.readRegister(Processor.regA0),
+                            processor.readRegister(Processor.regA1),
+                            processor.readRegister(Processor.regA2),
+                            processor.readRegister(Processor.regA3)
+                            );
+                processor.writeRegister(Processor.regV0, result);
+                processor.advancePC();
+                break;				       
+                            
+            default:
+                Lib.debug(dbgProcess, "Unexpected exception: " +
+                    Processor.exceptionNames[cause]);
+                Uexception = cause;
+                handleExit(0);
+                Lib.assertNotReached("Unexpected exception");
+        }
     }
 
     /** The program being run by this process. */

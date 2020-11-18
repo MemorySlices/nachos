@@ -61,6 +61,9 @@ public class Communicator {
         return word;
     }
     public static void selfTest(){
+        //xhk close selfTest
+        //return;
+
         System.out.println("Communicator Test Begin!");
         KThread[] speaker = new KThread[5];
         KThread[] listener = new KThread[5];
