@@ -265,13 +265,14 @@ public class UserProcess {
 
         if(pageTable[vpn]==null || pageTable[vpn].valid!=true){
             System.out.println("-----write to invalid page-----");
-            return 0;
+            return -1;
         }
 
         if(pageTable[vpn].readOnly==true){
             MemReadWriteLock.release();
             System.out.println("invalid write to read only memory!");
-            handleExit(0);// to be completed
+            //handleExit(-1);// to be completed
+            return -1;
         }
         ppn=pageTable[vpn].ppn;
 
@@ -290,7 +291,8 @@ public class UserProcess {
             if(pageTable[vpn].readOnly==true){
                 MemReadWriteLock.release();
                 System.out.println("invalid write to read only memory!");
-                handleExit(0);// to be completed
+                //handleExit(-1);// to be completed
+                return -1;
             }
             System.arraycopy(data, offset+cnt, memory, ppn*pageSize, Math.min(pageSize,amount-cnt));
             pageTable[ppn].used=true;
@@ -416,7 +418,8 @@ public class UserProcess {
             if(UserKernel.FreePageList.size()==0){
                 UserKernel.FreePageListLock.release();
                 System.out.println("no free page!");
-                handleExit(0); // to be completed
+                //handleExit(0); // to be completed
+                return false;
             }
 
             int ppn=UserKernel.FreePageList.removeFirst();
@@ -573,7 +576,7 @@ public class UserProcess {
             return -1;
         if(!checkAddrValidity(argvAddr))
             return -1;
-        if(argc<0 || argc<256){
+        if(argc<0 || argc>=256){
             System.out.println("argc too long Error");
             return -1;
         }
