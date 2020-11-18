@@ -183,14 +183,23 @@ public class UserProcess {
         vpo=getVPO(vaddr);
 
         MemReadWriteLock.acquire();
+        
+        if(pageTable[vpn]==null || pageTable[vpn].valid!=true){
+            System.out.println("-----read from invalid page-----");
+            return 0;
+        }
 
         ppn=pageTable[vpn].ppn;
-        System.arraycopy(memory, ppn*pageSize, data, offset, Math.min(pageSize-vpo,amount));
+        System.arraycopy(memory, ppn*pageSize+vpo, data, offset, Math.min(pageSize-vpo,amount));
         pageTable[ppn].used=true;
         cnt+=Math.min(pageSize-vpo,amount);
         
         while(cnt<amount){
             vpn++;
+            if(pageTable[vpn]==null || pageTable[vpn].valid!=true){
+                System.out.println("-----read from invalid page-----");
+                return cnt;
+            }
             ppn=pageTable[vpn].ppn;
             System.arraycopy(memory, ppn*pageSize, data, offset+cnt, Math.min(pageSize,amount-cnt));
             pageTable[ppn].used=true;
@@ -254,19 +263,29 @@ public class UserProcess {
         
         MemReadWriteLock.acquire();
 
-        ppn=pageTable[vpn].ppn;
+        if(pageTable[vpn]==null || pageTable[vpn].valid!=true){
+            System.out.println("-----write to invalid page-----");
+            return 0;
+        }
+
         if(pageTable[vpn].readOnly==true){
             MemReadWriteLock.release();
             System.out.println("invalid write to read only memory!");
             handleExit(0);// to be completed
         }
-        System.arraycopy(data, offset, memory, ppn*pageSize, Math.min(pageSize-vpo,amount));
+        ppn=pageTable[vpn].ppn;
+
+        System.arraycopy(data, offset, memory, ppn*pageSize+vpo, Math.min(pageSize-vpo,amount));
         pageTable[ppn].used=true;
         pageTable[ppn].dirty=true;
         cnt+=Math.min(pageSize-vpo,amount);
         
         while(cnt<amount){
             vpn++;
+            if(pageTable[vpn]==null || pageTable[vpn].valid!=true){
+                System.out.println("-----write to invalid page-----");
+                return cnt;
+            }
             ppn=pageTable[vpn].ppn;
             if(pageTable[vpn].readOnly==true){
                 MemReadWriteLock.release();
