@@ -464,6 +464,10 @@ public class UserProcess {
         UserKernel.FreePageListLock.release();
         
         //xhk: need to close file as well?
+
+        for(int i=0;i<16;i++){
+            handleClose(i);
+        }
     }    
 
     /**
