@@ -409,8 +409,8 @@ public class UserProcess {
             return false;
         }
         
-        //System.out.println("-----start load sections-----");
-        //System.out.println("numpages: "+numPages+" numphyspages: "+Machine.processor().getNumPhysPages());
+        System.out.println("-----start load sections-----");
+        System.out.println("numpages: "+numPages+" numphyspages: "+Machine.processor().getNumPhysPages());
 
         UserKernel.FreePageListLock.acquire();
         for(int i=0;i<numPages;i++){
@@ -424,7 +424,7 @@ public class UserProcess {
 
             int ppn=UserKernel.FreePageList.removeFirst();
 
-            //System.out.println("allocating virtual page: "+i+" ppn: "+ppn);
+            System.out.println("allocating virtual page: "+i+" ppn: "+ppn);
             //System.out.println("pagetable length: "+pageTable.length);
 
             pageTable[i]=new TranslationEntry(i,ppn, true,false,false,false);
@@ -780,7 +780,7 @@ public class UserProcess {
     private LinkedList<UserProcess> children = new LinkedList<>();
     public int NO_EXCEPTION = -1;
     private int Uexception = NO_EXCEPTION;
-    public boolean joint = true;
+    public boolean joint = false;
     private UThread mainThread = null;
 
     
