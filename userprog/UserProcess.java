@@ -778,9 +778,9 @@ public class UserProcess {
 
     // wyh
     private int exitCode = 0;
-    private int aliveP = 0;
+    private static int aliveP = 0;
     private int Pid = 0;
-    private int numP = 0;
+    private static int numP = 0;
     private LinkedList<UserProcess> children = new LinkedList<>();
     public int NO_EXCEPTION = -1;
     private int Uexception = NO_EXCEPTION;
