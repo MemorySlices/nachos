@@ -46,9 +46,11 @@ public class PriorityScheduler extends Scheduler {
      */
 
 	// !!change threadqueue to priority queue 
+	
 	public ThreadQueue newThreadQueue(boolean transferPriority) {
 		return new PriorityQueue(transferPriority);
 	}
+	
 	/*
     public PriorityQueue newThreadQueue(boolean transferPriority) {
 		return new PriorityQueue(transferPriority);
@@ -250,7 +252,7 @@ public class PriorityScheduler extends Scheduler {
 			// implement me (if you want)
 
 			if(holder!=null){
-				System.out.print(" Holder "+holder.thread);
+				System.out.print(" Holder "+holder.thread+" EP: "+holder.getEffectivePriority());
 			}
 
 			for(KThread t: queue){
