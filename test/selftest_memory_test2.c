@@ -26,7 +26,7 @@ int get_number(){
 
 int main(char *argv1,int argv2){
 
-    int i,j,src,ans,sum1=0,sum2=0;
+    int i,j,amount,src,ans,sum1=0,sum2=0;
 
     src=open(argv1);
 
