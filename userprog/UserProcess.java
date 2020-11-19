@@ -405,6 +405,8 @@ public class UserProcess {
      * @return	<tt>true</tt> if the sections were successfully loaded.
      */
     protected boolean loadSections() {
+        System.out.println("require pages: "+numPages);
+
         if (numPages > Machine.processor().getNumPhysPages()) {
             coff.close();
             Lib.debug(dbgProcess, "\tinsufficient physical memory");

@@ -5,7 +5,7 @@
 #define pageSize 1024
 
 int n;
-int a[pageSize*10],b[pageSize*10],c[pageSize*10];
+int a[pageSize*0],b[pageSize*10],c[pageSize*10];
 
 int main(int argc){
 

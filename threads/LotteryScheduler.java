@@ -135,8 +135,8 @@ public class LotteryScheduler extends PriorityScheduler {
 			for(KThread t: queue){
 				LotteryThreadState state=getThreadState(t);
 				sum+=state.getEffectivePriority();
-				System.out.println(t);
-				System.out.println(state.getEffectivePriority());
+				//System.out.println(t);
+				//System.out.println(state.getEffectivePriority());
 			}
 			
 			//System.out.println("sum of tickets: "+sum);
