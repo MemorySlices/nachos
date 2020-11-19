@@ -139,7 +139,7 @@ public class LotteryScheduler extends PriorityScheduler {
 				System.out.println(state.getEffectivePriority());
 			}
 			
-			System.out.println("sum of tickets: "+sum);
+			//System.out.println("sum of tickets: "+sum);
 
             tic=ra.nextInt(sum);
 

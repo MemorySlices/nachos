@@ -53,7 +53,7 @@ public class ThreadedKernel extends Kernel {
         //SynchList.selfTest();
         //Condition2.selfTest();
         //Communicator.selfTest();
-        LotteryScheduler.selfTest();
+        //LotteryScheduler.selfTest();
         //PriorityScheduler.selfTest();
         if (Machine.bank() != null) {
             ElevatorBank.selfTest();
