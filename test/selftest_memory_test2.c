@@ -11,15 +11,13 @@ int get_number(){
     int ret=0;
 
     if(p>=l){
-        printf("no number leaf\n");
+        printf("no number left\n");
         return 0;
     }
 
-    while(p<l){
-        while(a[p]<48 || a[p]>57) p++;
-        ret=0;
-        while(a[p]>=48 && a[p]<=57) ret=ret*10+a[p++]-48;
-    }
+    while(a[p]<48 || a[p]>57) p++;
+    ret=0;
+    while(a[p]>=48 && a[p]<=57) ret=ret*10+a[p++]-48;
 
     return ret;
 }
