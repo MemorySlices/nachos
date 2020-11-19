@@ -24,15 +24,14 @@ int get_number(){
     return ret;
 }
 
-int main(char *argv1,int argv2){
+int main(int argc, char **argv1){
 
     int i,j,amount,src,ans,sum1=0,sum2=0;
 
-    src=open(argv1);
+    src=open(argv1[0]);
 
-    m=argv2;
-
-    printf("read %d pages\n",m);
+    //printf("read %d pages\n",m);
+    m=10;
 
     amount=read(src, a, pageSize*m);
 
