@@ -28,7 +28,7 @@ int main(int argc, char **argv1){
 
     int i,j,amount,src,ans,sum1=0,sum2=0;
 
-    src=open(argv1[0]);
+    src=open(argv1[1]);
 
     //printf("read %d pages\n",m);
     m=10;
