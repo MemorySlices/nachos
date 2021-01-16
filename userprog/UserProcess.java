@@ -467,7 +467,8 @@ public class UserProcess {
 
         UserKernel.FreePageListLock.acquire();
         for(int i=0;i<numPages;i++)
-            UserKernel.FreePageList.add(i);
+            //UserKernel.FreePageList.add(i);
+            UserKernel.FreePageList.add(pageTable[i].ppn);
         UserKernel.FreePageListLock.release();
         
         //xhk: need to close file as well?
