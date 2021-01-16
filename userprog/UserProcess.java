@@ -522,6 +522,7 @@ public class UserProcess {
         int res = -1;
         exitCode = status;
         unloadSections();
+        children.clear();
         aliveP--;
         if(aliveP==0)
             Kernel.kernel.terminate();
@@ -558,6 +559,7 @@ public class UserProcess {
             return -1;
         }
         childProcess.joint = true;
+        children.remove(childProcess);
         childProcess.mainThread.join();
         byte[] exitBytes = Lib.bytesFromInt(childProcess.exitCode);
         if(writeVirtualMemory(resAddr, exitBytes) != 4){
@@ -603,8 +605,9 @@ public class UserProcess {
         }
         UserProcess child = new UserProcess();
         children.add(child);
-        if(!child.execute(file, argv))
+        if(!child.execute(file, argv)){
             res = -1;
+        }
         else
             res = child.Pid;
         return res;
